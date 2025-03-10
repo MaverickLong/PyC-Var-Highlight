@@ -8,6 +8,8 @@ import com.intellij.openapi.editor.event.CaretListener
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.python.psi.PyReferenceExpression
+import com.jetbrains.python.psi.PyTargetExpression
 import com.jetbrains.python.psi.PyTypedElement
 import com.jetbrains.python.psi.types.TypeEvalContext
 
@@ -21,6 +23,9 @@ class VariableCaretListener : CaretListener {
         val project = editor.project ?: return
 
         val document = editor.document
+
+        val widget = WindowManager.getInstance().getStatusBar(project)
+            .getWidget("VariableTypeStatusBarWidget") as VariableTypeStatusBarWidget
 
         // Commit the document to ensure that PSI is in sync with the document
         ApplicationManager.getApplication().invokeLater {
@@ -36,28 +41,39 @@ class VariableCaretListener : CaretListener {
             if (element != null) {
                 log.info("Found element: " + element.text)
 
-                // Instead of checking the element directly, get its parent of type PyTypedElement
-                val typedElement = PsiTreeUtil.getParentOfType(
+                // Look for variable-related PSI elements in the parent hierarchy.
+                val targetExpression = PsiTreeUtil.getParentOfType(
                     element,
-                    PyTypedElement::class.java
+                    PyTargetExpression::class.java
+                )
+                val referenceExpression = PsiTreeUtil.getParentOfType(
+                    element,
+                    PyReferenceExpression::class.java
                 )
 
-                if (typedElement != null) {
-                    val context = TypeEvalContext.userInitiated(project, psiFile)
-                    val type = context.getType(typedElement)
+                // Only proceed if the caret is within a variable (either as a definition or a reference)
+                if (targetExpression == null && referenceExpression == null) {
+                    widget.setText("")
+                    return@invokeLater
+                }
 
-                    if (type != null) {
-                        log.info("Element type: " + type.name)
-                        val widget = WindowManager.getInstance().getStatusBar(project)
-                            .getWidget("VariableTypeStatusBarWidget") as VariableTypeStatusBarWidget
-                        type.name?.let { widget.setText(it) }
-                    } else {
-                        log.info("Element type could not be determined.")
+                // Use the found variable element
+                val variableElement: PyTypedElement = targetExpression ?: referenceExpression!!
+
+                val context = TypeEvalContext.userInitiated(project, psiFile)
+                val type = context.getType(variableElement)
+
+                if (type != null) {
+                    log.info("Element type: " + type.name)
+
+                    if (type.name != null) {
+                        widget.setText(type.name!!)
+                        return@invokeLater
                     }
-                } else {
-                    log.info("Element is not a PyTypedElement.")
                 }
             }
         }
+        // Final catch case which resets the widget upon caret change.
+        widget.setText("")
     }
 }
