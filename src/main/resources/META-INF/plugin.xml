@@ -5,14 +5,18 @@
     <vendor>mavericklong</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.python</depends>
+
+    <description>
+        A plugin that displays the type of variable under the caret in the status bar.
+    </description>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.mavericklong.pycvarhighlight.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <editorFactoryListener implementation="com.github.mavericklong.pycvarhighlight.listeners.VariableEditorListener"/>
+        <statusBarWidgetFactory implementation="com.github.mavericklong.pycvarhighlight.statusBar.VariableTypeStatusBarWidgetFactory"
+          id="VariableTypeStatusBarWidget"/>
     </extensions>
 
-    <applicationListeners>
-        <listener class="com.github.mavericklong.pycvarhighlight.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
-    </applicationListeners>
 </idea-plugin>

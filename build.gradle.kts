@@ -47,6 +47,9 @@ dependencies {
         pluginVerifier()
         zipSigner()
         testFramework(TestFrameworkType.Platform)
+
+        pycharmCommunity("2024.3")
+        bundledPlugin("PythonCore")
     }
 }
 
