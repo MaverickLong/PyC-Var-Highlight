@@ -17,6 +17,10 @@
 - [ ] Click the <kbd>Watch</kbd> button on the top of the [IntelliJ Platform Plugin Template][template] to be notified about releases containing new features and fixes.
 
 <!-- Plugin description -->
+This project is done as part of the online assessment requirement of Flask Support project in JetBrains.
+
+Work sorely done by the applicant Yuxuan Long (email: maverick#minasan.xyz) at Imperial College London.
+
 Printing type of the variable under the caret on the status bar.
 <!-- Plugin description end -->
 
